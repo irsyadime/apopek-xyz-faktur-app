@@ -1,0 +1,268 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="successModalLabel">Success</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="successMessageBody"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="window.location.href='/Faktur/Index'">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-md shadow-sm pt-4 px-4">
+    <h3 class="fw-bold">Apotek XYZ</h3>
+    <p>Drugs store and supplier</p>
+    <form method="post">
+    <div class="row py-4">
+        @if (ViewBag.Faktur != null)
+        {
+            <div class="d-flex col-6 gap-2">
+                <label for="FakturCode" class="form-label fw-bold">No Faktur</label>
+                <input class="form-control w-50" type="text" name="FakturCode" id="FakturCode" value="@ViewBag.Faktur.FakturCode" readonly />
+            </div>
+            <div class="d-flex col-6 gap-2">
+                <label for="Operator" class="form-label fw-bold">Operator</label>
+                <input class="form-control w-50" type="text" name="Operator" id="Operator" value="@ViewBag.Faktur.Operator" readonly />
+            </div>
+            <div class="d-flex col-6 mt-2 gap-2">
+                <label class="form-label fw-bold" for="TglFakktur">Tgl Faktur</label>
+                <input class="form-control w-50" type="text" name="TglFaktur" id="TglFaktur" value="@(((DateTime)ViewBag.Faktur.TglFaktur).ToString("dd MMMM yyyy"))" readonly />
+            </div>
+        }
+        else
+        {
+            <div>Faktur not found</div>
+        }
+    </div>
+    <div class="row gap-2 px-2 py-2 border border-1 rounded-2">
+        <div class="col gap-2">
+            <label for="ProductCode" class="form-label fw-bold">Kode Barang</label>
+            <select id="ProductCodeSelect" class="form-select">
+                <option selected>Pilih Barang</option>
+                @foreach(var product in ViewBag.Product)
+                {
+                    <option value="@product.Id">@product.ProductCode</option>
+                }
+            </select>
+        </div>
+        <div class="col gap-2">
+            <label for="ProductName" class="form-label fw-bold">Nama Barang</label>
+            <input type="text" name="ProductName" id="ProductName" value="" class="form-control" readonly />
+        </div>
+        <div class="col gap-2">
+            <label for="Price" class="form-label fw-bold">Harga Satuan</label>
+            <input type="number" name="Price" id="Price" value="" class="form-control" readonly />
+        </div>
+        <div class="col gap-2">
+            <label for="JumlahBeli" class="form-label fw-bold">Jml Beli</label>
+            <input type="number" name="JumlahBeli" id="JumlahBeli" value="" class="form-control"/>
+        </div>
+        <div class="col gap-2">
+            <label for="SubTotal" class="form-label fw-bold">Subtotal</label>
+            <input type="number" name="SubTotal" id="SubTotal" value="" class="form-control" readonly/>
+        </div>
+    </div>
+    <div class="d-flex gap-2 justify-content-end py-2">
+        <button class="btn btn-outline-secondary fw-bold" id="btn-cancel" type="button">Cancel</button>
+        <button class="btn btn-outline-secondary fw-bold" id="btn-add" type="button">Add</button>
+    </div>
+    <div class="table-responsive py-2">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>BarangID</th>
+                    <th>Nama</th>
+                    <th>JmlBeli</th>
+                    <th>SubTotal</th>
+                </tr>
+            </thead>
+            <tbody id="dataDetails">
+                
+            </tbody>
+        </table>
+    </div>
+    <div class="d-flex justify-content-between py-2">
+        <div class="d-flex flex-column">
+            <h4 class="fw-bold">Perhatian!</h4>
+            <p>Barang Yang Sudah Dibeli, Tidak Dapat<br />Ditukar atau Dikembalikan</p>
+        </div>
+        <div class="d-flex flex-column gap-2">
+            <div class="d-flex gap-4">
+                <label for="Total" class="form-label fw-bold">Total</label>
+                <input type="number" name="Total" id="Total" value="0" class="form-control" readonly/>
+            </div>
+            <div class="d-flex gap-4">
+                <label for="bayar" class="form-label fw-bold">Bayar</label>
+                <input type="number" name="bayar" id="bayar" value="" class="form-control"/>
+            </div>
+            <div class="d-flex gap-4">
+                <label for="kembali" class="form-label fw-bold">Kembali</label>
+                <input type="number" name="kembali" id="kembali" value="" class="form-control" readonly/>
+            </div>
+        </div>
+    </div>
+    <div class="d-flex justify-content-between py-2">
+        <button class="btn btn-outline-secondary fw-bold" type="button" id="btn-exit">Exit</button>
+        <button class="btn btn-outline-secondary fw-bold" type="submit" id="btn-save">Save</button>
+    </div>
+    </form>
+</div>
+
+<script>
+    var products = @Html.Raw(Json.Serialize(ViewBag.Product));
+    var faktur = @Html.Raw(Json.Serialize(ViewBag.Faktur));
+    var fakturId = faktur.id
+    console.log('fakturId',fakturId)
+    var productDetailData = [];
+    let total = 0;
+    console.log("Products:", products);
+
+    document.getElementById("btn-exit").addEventListener("click", () => {
+        window.location.href = "/Faktur/Index";
+    })
+
+    document.getElementById('ProductCodeSelect').addEventListener('change', function () {
+        var productId = this.value;
+
+        var selectedProduct = products.find(product => product.id === parseInt(productId))
+       
+        if (selectedProduct) {
+            document.getElementById('ProductName').value = selectedProduct.productName;
+            document.getElementById('Price').value = selectedProduct.price;
+        }
+    });
+
+    document.getElementById('JumlahBeli').addEventListener('input', function () {
+        var jumlahBeli = this.value;
+        var price = parseFloat(document.getElementById('Price').value);
+        if (!isNaN(jumlahBeli) && !isNaN(price)) {
+            document.getElementById('SubTotal').value = jumlahBeli * price;
+        } else {
+            document.getElementById('SubTotal').value = '';
+        }
+    });
+
+    function addProductToTable(selectedProduct) {
+        var tableBody = document.getElementById('dataDetails');
+        var newRowNumber = tableBody.rows.length + 1;
+
+        var newRow = tableBody.insertRow();
+        var no = newRow.insertCell(0);
+        var barangID = newRow.insertCell(1);
+        var barangName = newRow.insertCell(2);
+        var jmlBeli = newRow.insertCell(3);
+        var subTotal = newRow.insertCell(4);
+
+        no.innerHTML = newRowNumber;
+        barangID.innerHTML = selectedProduct.productCode;
+        barangName.innerHTML = selectedProduct.productName;
+        jmlBeli.innerHTML = document.getElementById('JumlahBeli').value;
+        subTotal.innerHTML = document.getElementById('SubTotal').value;
+    }
+
+    function cleanSelectedProduct() {
+        document.getElementById('ProductName').value = "";
+        document.getElementById('Price').value = "";
+        document.getElementById('JumlahBeli').value = 0;
+        document.getElementById('SubTotal').value = 0;
+        document.getElementById('ProductCodeSelect').value = "";
+    }
+
+    document.getElementById('btn-add').addEventListener('click', function (event) {
+        event.preventDefault();
+
+        var productId = document.getElementById('ProductCodeSelect').value;
+        var selectedProduct = products.find(product => product.id === parseInt(productId));
+        var jumlahBeli = parseInt(document.getElementById('JumlahBeli').value);
+        var subTotal = parseInt(document.getElementById('SubTotal').value);
+
+        if (selectedProduct) {
+                addProductToTable(selectedProduct);
+                productDetailData.push({
+                    ...selectedProduct,
+                    jumlahBeli:jumlahBeli,
+                    subTotal:subTotal                   
+                });
+                total+= subTotal   
+                console.log('total: ',total)
+                document.getElementById('Total').value = total;
+                cleanSelectedProduct()
+                console.log("product detail array: ",productDetailData)
+        } else {
+                console.log("No product selected");
+        }
+    });
+
+    document.getElementById('btn-cancel').addEventListener('click', function (event) {
+        event.preventDefault();
+        cleanSelectedProduct()
+    })
+
+    document.getElementById('bayar').addEventListener('input', function () {
+        var bayar = parseInt(this.value);
+        var total = parseInt(document.getElementById('Total').value);
+        if (!isNaN(bayar) && !isNaN(total)) {
+            if (bayar >= total) {
+                document.getElementById('kembali').value = bayar - total;
+            } else {
+                console.log("Uang yang anda bayarkan kurang")
+            }
+        } else {
+            document.getElementById('kembali').value = "";
+        }
+    })
+
+    function sendData(data) {
+        $.ajax({
+            url: '/Faktur/SaveData',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            success: (response) => {
+                console.log("Data berhasil dikirimkan ke controller")
+                if (response.success && response.message)
+                    var successMessage = response.message;
+                    var successMessageBody = document.getElementById('successMessageBody');
+                    successMessageBody.innerHTML = '<p>' + successMessage + '</p>';
+                    var successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                    successModal.show();
+                }
+                //window.location.href = '/Faktur/Index';
+            },
+            error: function (xhr, status, error) {
+                console.error("error: ", error)
+            }
+        });
+    }
+    document.getElementById('btn-save').addEventListener('click', function (event) {
+        event.preventDefault();
+        var totalTrx = productDetailData.reduce((acc, curr) => acc + curr.subTotal, 0);
+        var transactions = [];
+        productDetailData.forEach((product) => {
+            var transaction = {
+                fakturId:fakturId,
+                productId:product.id,
+                jumlahBeli:product.jumlahBeli,
+                subTotal:product.subTotal
+            }
+            transactions.push(transaction)
+        })
+        var data = {
+            transactions:transactions,
+            total:totalTrx,
+            fakturId:fakturId
+        }
+        console.log("data to send: ", data)
+        sendData(data)
+    })
+</script>

@@ -1,0 +1,17 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+@model ptpnProject.Models.FakturDtoModel
+
+<div class="d-flex justify-content-center align-items-center">
+    <form method="post" asp-action="CreateFaktur" asp-controller="Faktur" class="form">
+        <label for="FakturCode" class="form-label fw-bold">Nama Faktur</label>
+        <input type="type" name="FakturCode" class="form-control" asp-for="FakturCode" />
+        <p class="m-0 text-sm text-secondary">cth: F001</p>
+        <div class="d-flex justify-content-end">
+            <button class="btn btn-primary" type="submit">Create</button>
+        </div>
+    </form>
+</div>
